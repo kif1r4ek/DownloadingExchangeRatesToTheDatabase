@@ -1,4 +1,4 @@
-from pydantic_core.core_schema import computed_field
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,8 +14,10 @@ class Config(BaseSettings):
 
     FETCH_INTERVAL: int = 5
 
+    _env_path = Path(__file__).resolve().parent.parent / ".env"
+
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_env_path,
         env_file_encoding="utf-8",
         case_sensitive=True
     )

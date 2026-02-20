@@ -3,7 +3,7 @@ import time
 import logging
 
 from app.api_client import fetch_rates
-from app.db import save_request, save_responses
+from app.db import init_db, save_request, save_responses
 from app.config import settings
 
 # Логгер для консоли
@@ -46,7 +46,7 @@ def job():
 
 def main():
     logger.info(f"Сервис запущен. Интервал: каждые {settings.FETCH_INTERVAL} мин.")
-
+    init_db()
     job()
 
     schedule.every(settings.FETCH_INTERVAL).minutes.do(job)
@@ -58,3 +58,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
