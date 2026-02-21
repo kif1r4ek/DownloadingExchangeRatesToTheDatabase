@@ -1,5 +1,10 @@
+import logging
+
 import psycopg2
+
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def get_connection():
@@ -14,7 +19,8 @@ def get_connection():
         )
     except psycopg2.OperationalError as e:
         raise ConnectionError(
-            f"Не удалось подключиться к PostgreSQL ({settings.DB_HOST}:{settings.DB_PORT}, db={settings.DB_NAME}, user={settings.DB_USER}). "
+            f"Не удалось подключиться к PostgreSQL "
+            f"({settings.DB_HOST}:{settings.DB_PORT}, db={settings.DB_NAME}, user={settings.DB_USER}). "
             "Проверьте, что сервер БД запущен и принимает TCP-подключения."
         ) from e
 
@@ -46,6 +52,7 @@ def init_db():
             """
         )
         connection.commit()
+        logger.info("Таблицы БД инициализированы")
     except Exception as e:
         connection.rollback()
         raise e
@@ -69,7 +76,7 @@ def save_request(base_currency: str, endpoint: str, status_code: int) -> int:
             VALUES (%s, %s, %s)
             RETURNING id
             """,
-            (base_currency, endpoint, status_code)
+            (base_currency, endpoint, status_code),
         )
         request_id = cursor.fetchone()[0]
         connection.commit()
@@ -97,14 +104,12 @@ def save_responses(request_id: int, rates: dict):
                 INSERT INTO public.responses (request_id, currency_code, rate)
                 VALUES (%s, %s, %s)
                 """,
-                (request_id, currency_code, rate)
+                (request_id, currency_code, rate),
             )
         connection.commit()
-
     except Exception as e:
         connection.rollback()
         raise e
-
     finally:
         cursor.close()
         connection.close()
